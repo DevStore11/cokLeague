@@ -11,7 +11,9 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "../frontend/pages")));
+app.use(express.static(path.join(__dirname, "../frontend/")));
+app.use("/assets", express.static(path.join(__dirname, "../frontend/assets")));
+
 
 // ========================= CONEXÃO MYSQL (AIVEN) =========================
 // Caminho para o certificado SSL
@@ -40,13 +42,29 @@ conexao.connect((erro) => {
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
 });
+// Cadastro
+app.get("/cadastro", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/cadastro.html"));
+});
+
+// Login
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/login.html"));
+});
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dahboard.html"));
+});
+
+app.get("/dashboard-admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/dashboard-admin.html"));
+});
 
 // ========================= USUÁRIOS =========================
 app.post("/cadastro", (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).send("Nome e senha obrigatórios");
 
-  db.query("INSERT INTO users (username, password) VALUES (?, ?)", [username, password], (err) => {
+  conexao.query("INSERT INTO users (username, password) VALUES (?, ?)", [username, password], (err) => {
     if (err) return res.status(500).send("Erro ao cadastrar: " + err.message);
     res.send("Usuário cadastrado!");
   });
@@ -59,7 +77,7 @@ app.post("/login", (req, res) => {
     return res.json({ sucesso: true, painel: "admin" });
   }
 
-  db.query("SELECT * FROM users WHERE username=? AND password=?", [username, password], (err, results) => {
+  conexao.query("SELECT * FROM users WHERE username=? AND password=?", [username, password], (err, results) => {
     if (err) return res.status(500).send(err);
     if (results.length > 0) {
       const user = results[0];
@@ -75,7 +93,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/users", (req, res) => {
-  db.query("SELECT id, username FROM users", (err, results) => {
+  conexao.query("SELECT id, username FROM users", (err, results) => {
     if (err) return res.status(500).send("Erro ao buscar usuários");
     res.json(results);
   });
@@ -85,7 +103,7 @@ app.delete("/users/:id", (req, res) => {
   const userId = req.params.id;
   if (userId === "1") return res.status(403).send("Não é permitido apagar o admin");
 
-  db.query("DELETE FROM users WHERE id=?", [userId], (err) => {
+  conexao.query("DELETE FROM users WHERE id=?", [userId], (err) => {
     if (err) return res.status(500).send("Erro ao apagar usuário");
     res.send("Usuário apagado com sucesso!");
   });
@@ -96,14 +114,14 @@ app.post("/ligas", (req, res) => {
   const { nome } = req.body;
   if (!nome) return res.status(400).send("Nome da liga obrigatório");
 
-  db.query("INSERT INTO ligas (nome) VALUES (?)", [nome], (err, result) => {
+  conexao.query("INSERT INTO ligas (nome) VALUES (?)", [nome], (err, result) => {
     if (err) return res.status(500).send("Erro ao criar liga: " + err.message);
     res.json({ sucesso: true, id: result.insertId });
   });
 });
 
 app.get("/ligas", (req, res) => {
-  db.query("SELECT * FROM ligas", (err, results) => {
+  conexao.query("SELECT * FROM ligas", (err, results) => {
     if (err) return res.status(500).send("Erro ao buscar ligas");
     res.json(results);
   });
@@ -111,7 +129,7 @@ app.get("/ligas", (req, res) => {
 
 app.delete("/ligas/:id", (req, res) => {
   const ligaId = req.params.id;
-  db.query("DELETE FROM ligas WHERE id=?", [ligaId], (err) => {
+  conexao.query("DELETE FROM ligas WHERE id=?", [ligaId], (err) => {
     if (err) return res.status(500).send("Erro ao apagar liga");
     res.send("Liga apagada com sucesso!");
   });
@@ -123,7 +141,7 @@ app.post("/liga-clubes", (req, res) => {
   if (!liga_id || !clubes || clubes.length === 0) return res.status(400).send("Dados inválidos");
 
   const values = clubes.map(clube_id => [liga_id, clube_id]);
-  db.query("INSERT INTO liga_clubes (liga_id, clube_id) VALUES ?", [values], (err) => {
+  conexao.query("INSERT INTO liga_clubes (liga_id, clube_id) VALUES ?", [values], (err) => {
     if (err) return res.status(500).send("Erro ao adicionar clubes: " + err.message);
     res.json({ sucesso: true });
   });
@@ -131,7 +149,7 @@ app.post("/liga-clubes", (req, res) => {
 
 app.get("/liga-clubes/:liga_id", (req, res) => {
   const liga_id = req.params.liga_id;
-  db.query("SELECT u.id, u.username FROM liga_clubes lc JOIN users u ON lc.clube_id = u.id WHERE lc.liga_id=?", [liga_id], (err, results) => {
+  conexao.query("SELECT u.id, u.username FROM liga_clubes lc JOIN users u ON lc.clube_id = u.id WHERE lc.liga_id=?", [liga_id], (err, results) => {
     if (err) return res.status(500).send("Erro ao buscar clubes");
     res.json(results);
   });
@@ -142,7 +160,7 @@ app.post("/confrontos", (req, res) => {
   const { liga_id, clube_casa_id, clube_fora_id, data_confronto, hora_confronto } = req.body;
   if (!liga_id || !clube_casa_id || !clube_fora_id || !data_confronto || !hora_confronto) return res.status(400).send("Dados inválidos");
 
-  db.query("INSERT INTO confrontos (liga_id, clube_casa_id, clube_fora_id, data_confronto, hora_confronto) VALUES (?,?,?,?,?)",
+  conexao.query("INSERT INTO confrontos (liga_id, clube_casa_id, clube_fora_id, data_confronto, hora_confronto) VALUES (?,?,?,?,?)",
     [liga_id, clube_casa_id, clube_fora_id, data_confronto, hora_confronto], (err) => {
       if (err) return res.status(500).send("Erro ao marcar confronto");
       res.json({ sucesso: true });
@@ -151,7 +169,7 @@ app.post("/confrontos", (req, res) => {
 
 app.get("/confrontos/:liga_id", (req, res) => {
   const liga_id = req.params.liga_id;
-  db.query(`SELECT c.id, c.data_confronto, c.hora_confronto, u1.username AS casa, u2.username AS fora, c.resultado, c.estado
+  conexao.query(`SELECT c.id, c.data_confronto, c.hora_confronto, u1.username AS casa, u2.username AS fora, c.resultado, c.estado
             FROM confrontos c
             JOIN users u1 ON c.clube_casa_id = u1.id
             JOIN users u2 ON c.clube_fora_id = u2.id
@@ -163,7 +181,7 @@ app.get("/confrontos/:liga_id", (req, res) => {
 
 app.delete("/confrontos/:id", (req, res) => {
   const id = req.params.id;
-  db.query("DELETE FROM confrontos WHERE id=?", [id], (err) => {
+  conexao.query("DELETE FROM confrontos WHERE id=?", [id], (err) => {
     if (err) return res.status(500).send("Erro ao apagar confronto");
     res.send("Confronto apagado com sucesso!");
   });
@@ -175,7 +193,7 @@ app.put("/confrontos/:id/resultado", (req, res) => {
   if (golos_casa === undefined || golos_fora === undefined) return res.status(400).send("Golos inválidos");
 
   const resultado = `${golos_casa}-${golos_fora}`;
-  db.query("UPDATE confrontos SET resultado=?, estado='Finalizado' WHERE id=?", [resultado, id], (err) => {
+  conexao.query("UPDATE confrontos SET resultado=?, estado='Finalizado' WHERE id=?", [resultado, id], (err) => {
     if (err) return res.status(500).send("Erro ao atualizar resultado");
     res.json({ sucesso: true });
   });
@@ -185,12 +203,12 @@ app.put("/confrontos/:id/resultado", (req, res) => {
 app.get("/tabela/:liga_id", (req, res) => {
   const liga_id = req.params.liga_id;
 
-  db.query("SELECT u.id, u.username FROM liga_clubes lc JOIN users u ON lc.clube_id = u.id WHERE lc.liga_id = ?", [liga_id], (err, clubes) => {
+  conexao.query("SELECT u.id, u.username FROM liga_clubes lc JOIN users u ON lc.clube_id = u.id WHERE lc.liga_id = ?", [liga_id], (err, clubes) => {
     if(err) return res.status(500).send("Erro ao buscar clubes");
 
     if(clubes.length === 0) return res.json([]);
 
-    db.query("SELECT * FROM confrontos WHERE liga_id = ?", [liga_id], (err2, confrontos) => {
+    conexao.query("SELECT * FROM confrontos WHERE liga_id = ?", [liga_id], (err2, confrontos) => {
       if(err2) return res.status(500).send("Erro ao buscar confrontos");
 
       const tabelaMap = {};
@@ -241,12 +259,12 @@ app.get("/tabela/:liga_id", (req, res) => {
 app.get("/dashboard/:user_id", (req, res) => {
   const user_id = req.params.user_id;
 
-  db.query("SELECT l.id, l.nome FROM liga_clubes lc JOIN ligas l ON lc.liga_id=l.id WHERE lc.clube_id=?", [user_id], (err, ligas) => {
+  conexao.query("SELECT l.id, l.nome FROM liga_clubes lc JOIN ligas l ON lc.liga_id=l.id WHERE lc.clube_id=?", [user_id], (err, ligas) => {
     if (err) return res.status(500).send("Erro ao buscar ligas do jogador");
 
     if (ligas.length === 0) return res.json({ estatisticas: {}, ligas: [] });
 
-    db.query("SELECT * FROM confrontos WHERE clube_casa_id=? OR clube_fora_id=?", [user_id, user_id], (err2, confrontos) => {
+    conexao.query("SELECT * FROM confrontos WHERE clube_casa_id=? OR clube_fora_id=?", [user_id, user_id], (err2, confrontos) => {
       if (err2) return res.status(500).send("Erro ao buscar confrontos");
 
       let jogos = 0, vitorias = 0, empates = 0, derrotas = 0, golos = 0;

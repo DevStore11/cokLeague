@@ -21,7 +21,7 @@ async function login() {
     const data = await res.json();
 
     if (data.painel === "admin") {
-      window.location.href = "dashboard-admin.html";
+      window.location.href = "/dashboard-admin";
     } else {
       // Salva id e username do jogador no localStorage
       const usersRes = await fetch(`${backendUrl}/users`);
@@ -31,7 +31,7 @@ async function login() {
         localStorage.setItem("user_id", user.id);
         localStorage.setItem("username", user.username);
       }
-      window.location.href = "dashboard.html";
+      window.location.href = "/dashboard";
     }
 
   } catch (err) {
