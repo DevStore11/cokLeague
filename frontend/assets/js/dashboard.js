@@ -1,5 +1,6 @@
+const backendUrl = "https://cokleague.onrender.com";
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Dados guardados no login
   const userId = localStorage.getItem("user_id");
   const username = localStorage.getItem("username");
 
@@ -13,11 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Mostrar nome do jogador
   userNameEl.textContent = username;
 
   // Buscar estatísticas e ligas do jogador
-  fetch(`https://cokleague.onrender.com/${userId}`)
+  fetch(`${backendUrl}/dashboard/${userId}`)
     .then(res => res.json())
     .then(data => {
       mostrarEstatisticas(data.estatisticas);
@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
       statsDiv.textContent = "Erro ao carregar estatísticas.";
     });
 
-  // Função para mostrar estatísticas
   function mostrarEstatisticas(est) {
     statsDiv.innerHTML = `
       <h3>📊 Estatísticas</h3>
@@ -40,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Função para mostrar as ligas
   function mostrarLigas(ligas) {
     ligasDiv.innerHTML = "<h3>🏆 Suas Ligas</h3>";
 
@@ -55,12 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const li = document.createElement("li");
       li.textContent = liga.nome;
 
-      // Botão para ver tabela classificativa da liga
       const btnTabela = document.createElement("button");
       btnTabela.textContent = "📋 Ver Tabela";
       btnTabela.onclick = () => verTabelaLiga(liga.id);
 
-      // Botão para ver confrontos da liga
       const btnJogos = document.createElement("button");
       btnJogos.textContent = "⚽ Ver Confrontos";
       btnJogos.onclick = () => verConfrontosLiga(liga.id);
@@ -73,9 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ligasDiv.appendChild(ul);
   }
 
-  // Mostrar tabela da liga
   function verTabelaLiga(ligaId) {
-    fetch(`https://cokleague.onrender.com/${ligaId}`)
+    fetch(`${backendUrl}/tabela/${ligaId}`)
       .then(res => res.json())
       .then(tabela => {
         let tabelaHTML = `
@@ -103,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         });
         tabelaHTML += "</table>";
-
         ligasDiv.innerHTML = tabelaHTML;
       })
       .catch(err => {
@@ -112,9 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // Mostrar confrontos da liga
   function verConfrontosLiga(ligaId) {
-    fetch(`https://cokleague.onrender.com$/{ligaId}`)
+    fetch(`${backendUrl}/confrontos/${ligaId}`)
       .then(res => res.json())
       .then(confrontos => {
         let jogosHTML = `
@@ -137,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         });
         jogosHTML += "</table>";
-
         ligasDiv.innerHTML = jogosHTML;
       })
       .catch(err => {
