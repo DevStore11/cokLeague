@@ -1,5 +1,4 @@
-const backendUrl = "http://localhost:3000";
-
+const backendUrl = "https://cokleague.onrender.com";
 async function cadastrar() {
   const username = document.getElementById("usernameCadastro").value.trim();
   const password = document.getElementById("passwordCadastro").value.trim();

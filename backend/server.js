@@ -296,5 +296,5 @@ app.get("/dashboard/:user_id", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`)
-  console.log(' http://localhost:3000')
+  console.log(' https://cokleague.onrender.com')
 });

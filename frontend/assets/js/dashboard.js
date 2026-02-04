@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   userNameEl.textContent = username;
 
   // Buscar estatísticas e ligas do jogador
-  fetch(`http://localhost:3000/dashboard/${userId}`)
+  fetch(`https://cokleague.onrender.com/${userId}`)
     .then(res => res.json())
     .then(data => {
       mostrarEstatisticas(data.estatisticas);
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Mostrar tabela da liga
   function verTabelaLiga(ligaId) {
-    fetch(`http://localhost:3000/tabela/${ligaId}`)
+    fetch(`https://cokleague.onrender.com/${ligaId}`)
       .then(res => res.json())
       .then(tabela => {
         let tabelaHTML = `
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Mostrar confrontos da liga
   function verConfrontosLiga(ligaId) {
-    fetch(`http://localhost:3000/confrontos/${ligaId}`)
+    fetch(`https://cokleague.onrender.com$/{ligaId}`)
       .then(res => res.json())
       .then(confrontos => {
         let jogosHTML = `
